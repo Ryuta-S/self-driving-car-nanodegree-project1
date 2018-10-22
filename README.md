@@ -1,56 +1,69 @@
 # **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
 
-Overview
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+**Finding Lane Lines on the Road**
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
+The goals / steps of this project are the following:
+* Make a pipeline that finds lane lines on the road
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+**Example Input image**
+![input](./test_images/whiteCarLaneSwitch.jpg)
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+**Example Output image**
+![output](./test_images_output/whiteCarLaneSwitch.jpg)
 
-
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
 ---
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+### Reflection
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
+### 1. I explain my pipleline
 
-**Step 2:** Open the code in a Jupyter Notebook
+##### My pipeline consisted of 11 steps. 
+First, I convert image to grayscale. Then, I use helper function 'grayscale()'.
+![grayscale](./writeup_image/grayscale.jpg)
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+Second, in order to find yellow lane lines, convert image to hsv color space from rgb color space. And, using cv2.inRange() function, Find yellow area from hsv image. Then, example output image is below.
+![yellow_color_mask](./writeup_image/yellow_color_mask.jpg)
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+Third, apply a color mask to grayscale image, judge it to be white when it is above the threshold vale, and find white lane. Then, the output image is below.
+![white_color_mask](./writeup_image/white_color_mask.jpg)
 
-`> jupyter notebook`
+Fourth, combine two images only extracted only white and only yellow, Using cv2.bitwise_or() function.Then, the output image is below.
+![conbine_color_mask](./writeup_image/combine_color_mask.jpg)
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
+Fifth, combine color mask image and grayscale image. The output iamge is below.
+![conbine_gray](./writeup_image/combine_gray.jpg)
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+Next, apply gaussian blur to combine image.
+![blur_gray](./writeup_image/blur_gray.jpg)
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+Next, apply canny edges detection.
+![edges_gray](./writeup_image/edges_gray.jpg)
+
+Next, region masking.
+![masked_gray](./writeup_image/masked_gray.jpg)
+
+Next, get lines-array using hough transform. And, divide into two arrays. The two arrays are divided depending wheter they belong to the left side or to the right side of the image.
+
+Show the image in which the array having left lines is drawn.
+![left_lines_only](./writeup_image/left_lines_only.jpg)
+
+Show the image in which the array having right lines is drawn.
+![right_lines_only](./writeup_image/right_lines_only.jpg)
+
+Calculate a slope and intercept of the straight line from each array.
+draw each line based on the slope and intercept.
+This is the output image below.
+![output](./test_images_output/whiteCarLaneSwitch.jpg)
+
+### 2. Identify potential shortcomings with your current pipeline
+1. It is easily affected by the weather. When the sun is strong, it becomes difficult to recognize the white line on the road. I recognize many points as edges. 
+2. Cracks on the road are recognized as edges, and when taking slope, intercept and average, it becomes an outlier value.
+
+### 3. Suggest possible improvements to your pipeline
+
+A possible improvement would be to Perform histogram conversion to make it easier to find white lines.
+
 
